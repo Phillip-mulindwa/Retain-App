@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
+const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 
@@ -12,6 +13,8 @@ app.use(express.json());
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', service: 'retain-backend' });
 });
+
+app.use('/api/auth', authRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
