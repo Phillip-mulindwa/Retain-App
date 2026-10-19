@@ -34,7 +34,9 @@ The frontend is React + TypeScript (Vite) and the backend is Express + MongoDB. 
 - Sign up, log in and log out. You stay logged in after a page refresh, and you get sent back to the login page when your token expires.
 - Add, view, edit and delete your own expenses. Each expense has a title, amount, category, date, payment method and optional notes.
 - Search expenses by title or notes, filter by category, payment method, date range and amount range, sort by date or amount, and page through the results. All of this filter state lives in Redux Toolkit.
-- Set a monthly budget (or change it) and see how much you've spent, how much is left, and a status of **within**, **approaching** or **over**.
+- Set a monthly budget (or change it) and see how much you've spent, how much is left, and a status of 
+
+**within**, **approaching** or **over**.
 - A dashboard for the selected month showing total spend, budget status, your biggest single expense, spending per category and your 5 most recent expenses.
 
 ### For admins
@@ -155,7 +157,7 @@ Every route starts with `/api`.
 
 **Shared TypeScript types.** The types for users, expenses, budgets, categories, dashboard data and admin insights are all in `frontend/src/types/index.ts`. The API functions, Redux slice, Context and components all use them, and there's no `any` anywhere in the frontend.
 
-**It works on phones too.** On desktop the sidebar stays open. On smaller screens it turns into a slide-out menu, and the pages, forms and filters stack into a single column.
+**It works on phones too.** On desktop the sidebar stays open. On smaller screens it turns into a slide out menu, and the pages, forms and filters stack into a single column.
 
 **Errors get shown, not swallowed.** On the backend, every route passes errors to one error handler in `backend/src/middleware/errorHandler.js`. It turns validation errors, duplicate emails and bad IDs into clear 4xx messages. On the frontend, those messages show up as alerts in the forms and pages. An Axios interceptor logs you out and sends you to the login page if your token expires.
 
