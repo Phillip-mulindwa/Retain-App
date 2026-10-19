@@ -1,0 +1,21 @@
+# Render Blueprint - lets Render build the backend service straight
+# from this repo instead of clicking through the dashboard by hand.
+# MONGO_URI, JWT_SECRET and CLIENT_URL are marked sync: false so
+# they're entered once in the Render dashboard rather than committed.
+services:
+  - type: web
+    name: retain-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: PORT
+        value: 5000
