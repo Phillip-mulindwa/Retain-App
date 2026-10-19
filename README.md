@@ -1,184 +1,162 @@
 # Retain
 
-A personal expense & budget manager. Log what you spend, tag it by
-category and payment method, set a monthly budget and watch — in real
-time, colour-coded — whether you're within it, approaching it, or over
-it. Admins get a second dashboard for managing the shared category
-list and keeping an eye on platform-wide usage.
+**Live app:** https://retain-app-sigma.vercel.app
+**Backend API:** https://retain-backend-rewp.onrender.com (health check: [/api/health](https://retain-backend-rewp.onrender.com/api/health))
 
-Built as a summative project: React + TypeScript + Vite on the
-frontend, Express + MongoDB on the backend, Context for auth, Redux
-Toolkit for expense filtering.
+**Demo admin login**
 
-**Live app:** _not yet deployed — see [Deployment](#deployment) below for how this gets hosted once it's live._
+- Email: `admin@retain.app`
+- Password: `Admin123!`
+
+The backend is on Render's free plan, so it goes to sleep when nobody is using it. If the first request is slow or the login seems to hang, give it about a minute to wake up and try again.
 
 ---
 
-## Table of contents
+Retain is an expense and budget tracker I built for my summative project. You log what you spend, give each expense a category and a payment method, and set a budget for the month. The app then tells you whether you're within budget, getting close to it, or over it. Admins get an extra dashboard where they can manage the categories everyone uses and see how the platform is being used overall.
+
+The frontend is React + TypeScript (Vite) and the backend is Express + MongoDB. Auth is handled with React Context and the expense filters use Redux Toolkit.
+
+## Contents
 
 - [Features](#features)
 - [Tech stack](#tech-stack)
 - [Project structure](#project-structure)
-- [Getting started locally](#getting-started-locally)
+- [Running it locally](#running-it-locally)
 - [Environment variables](#environment-variables)
 - [API reference](#api-reference)
-- [Design notes](#design-notes)
+- [Design decisions](#design-decisions)
 - [Deployment](#deployment)
-
----
 
 ## Features
 
-**Everyone (signed-in users)**
-- Sign up, sign in, sign out — session persists across a refresh
-- Create, view, edit and delete your own expenses (title, amount,
-  category, date, payment method, optional notes)
-- Search expenses by title/notes, filter by category, payment method,
-  date range and amount range, sort by date or amount, paginate through
-  results — all backed by Redux Toolkit state
-- Set or update a monthly budget and see, live: total spent, remaining
-  budget, and a **within / approaching / over** status
-- A dashboard summarising the selected month: total spend, budget
-  status, highest single expense, spending broken down by category,
-  and the 5 most recent expenses
+### For any signed-in user
 
-**Admins only** (first account ever created becomes admin automatically)
-- Create, rename and delete expense categories — deleting a category
-  that still has expenses reassigns them to a protected "Uncategorized"
-  default rather than orphaning them
-- Platform insights: total registered users, total expenses recorded,
-  total value recorded, expenses recorded this month, spend per
-  category, top 5 and bottom 5 categories by usage, recently added
-  expenses, recently registered users
+- Sign up, log in and log out. You stay logged in after a page refresh, and you get sent back to the login page when your token expires.
+- Add, view, edit and delete your own expenses. Each expense has a title, amount, category, date, payment method and optional notes.
+- Search expenses by title or notes, filter by category, payment method, date range and amount range, sort by date or amount, and page through the results. All of this filter state lives in Redux Toolkit.
+- Set a monthly budget (or change it) and see how much you've spent, how much is left, and a status of **within**, **approaching** or **over**.
+- A dashboard for the selected month showing total spend, budget status, your biggest single expense, spending per category and your 5 most recent expenses.
+
+### For admins
+
+The first account created on an empty database is made an admin automatically. The seed script also creates the demo admin listed above.
+
+- Create, rename, recolour and delete expense categories. When you delete a category that still has expenses, those expenses get moved to a protected "Uncategorized" category so nothing is left without a category.
+- Platform insights: total users, total expenses, total amount recorded, expenses added this month, spend per category, the top 5 and bottom 5 categories by usage, recent expenses and recently registered users.
 
 ## Tech stack
 
-**Frontend** — React 19 + TypeScript, Vite, Material UI (custom teal/amber
-theme), React Router, Redux Toolkit (expense filtering only), React
-Context (authentication only), Axios.
+**Frontend:** React 19, TypeScript, Vite, Material UI (with a custom teal/amber theme), React Router, Redux Toolkit for expense filtering, React Context for auth, Axios.
 
-**Backend** — Node.js, Express, MongoDB with Mongoose, JSON Web Tokens
-for auth, bcrypt for password hashing.
+**Backend:** Node.js, Express, MongoDB with Mongoose, JWT for auth, bcrypt for hashing passwords.
+
+**Hosting:** Vercel (frontend), Render (backend), MongoDB Atlas (database).
 
 ## Project structure
 
 ```
 Retain-App/
-  frontend/     Vite + React + TypeScript app (see frontend/src for feature folders)
-  backend/      Express API (models, routes, controllers, middleware)
+  frontend/     React app (pages, components, feature folders under src/)
+  backend/      Express API (models, routes, controllers, middleware, seed script)
+  render.yaml   Render blueprint for the backend
 ```
 
-Each has its own `package.json` — they're deployed separately but live
-in one repo so the project's history stays in one timeline.
+The frontend and backend each have their own `package.json` and are deployed separately. I kept them in one repo so all the history is in one place.
 
-## Getting started locally
+## Running it locally
 
-You'll need Node.js 18+ and a MongoDB connection (a free
-[MongoDB Atlas](https://www.mongodb.com/atlas) cluster works fine, or a
-local `mongod`).
+You need Node.js 18 or newer and a MongoDB database. A free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster works, or you can run `mongod` locally.
 
 ### 1. Backend
 
 ```bash
 cd backend
 npm install
-cp .env.example .env     # fill in MONGO_URI and JWT_SECRET
-npm run seed              # creates the Uncategorized default category + a demo admin
-npm run dev                # starts the API on http://localhost:5000
+cp .env.example .env    # then fill in MONGO_URI and JWT_SECRET
+npm run seed            # adds the starter categories and the demo admin
+npm run dev             # API runs on http://localhost:5000
 ```
 
-The seed script prints a demo admin login (`admin@retain.app` /
-`Admin123!` at the time of writing — check the script's console output,
-and change it immediately in any real deployment).
+You can run the seed script more than once. It only adds what's missing, so it won't create duplicates.
 
 ### 2. Frontend
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env     # VITE_API_URL should point at the backend above
-npm run dev                # starts the app on http://localhost:5173
+cp .env.example .env    # VITE_API_URL should point at the backend
+npm run dev             # app runs on http://localhost:5173
 ```
 
-Sign up for a new account (the first account created on a fresh
-database becomes an admin automatically), or log in with the seeded
-demo admin to see the admin dashboard right away.
+Then either sign up for a new account or log in with the demo admin to go straight to the admin dashboard.
 
-### 3. Build for production
+### 3. Production build
 
 ```bash
-# frontend
-cd frontend && npm run build   # type-checks with tsc, then bundles with vite
-
-# backend - no build step, it's plain Node
-cd backend && npm start
+cd frontend && npm run build   # runs tsc, then builds with Vite
+cd backend && npm start        # no build step, it's plain Node
 ```
+
+### Troubleshooting
+
+If the backend fails with `querySrv ECONNREFUSED` when connecting to Atlas, your DNS server can't resolve the `mongodb+srv://` address. Changing your network DNS to `8.8.8.8` or `1.1.1.1` fixes it. You can also use the standard `mongodb://` connection string from the Atlas "Connect" screen.
 
 ## Environment variables
 
 **backend/.env**
 
-| Variable      | Description                                               |
-|---------------|-------------------------------------------------------------|
-| `MONGO_URI`   | MongoDB connection string                                   |
-| `JWT_SECRET`  | Long random string used to sign/verify auth tokens           |
-| `PORT`        | Port the API listens on (default `5000`)                     |
-| `CLIENT_URL`  | Frontend origin allowed through CORS                          |
+| Variable     | What it's for                                    |
+|--------------|--------------------------------------------------|
+| `MONGO_URI`  | MongoDB connection string                        |
+| `JWT_SECRET` | Long random string used to sign auth tokens      |
+| `PORT`       | Port the API listens on (defaults to `5000`)     |
+| `CLIENT_URL` | Frontend URL allowed through CORS                |
 
 **frontend/.env**
 
-| Variable         | Description                        |
-|------------------|-------------------------------------|
-| `VITE_API_URL`   | Base URL of the backend API, e.g. `http://localhost:5000/api` |
+| Variable       | What it's for                                                  |
+|----------------|----------------------------------------------------------------|
+| `VITE_API_URL` | Base URL of the API, e.g. `http://localhost:5000/api`          |
 
 ## API reference
 
-All routes below are prefixed with `/api`. Routes marked 🔒 require a
-`Authorization: Bearer <token>` header; 🔒👑 additionally requires the
-signed-in user to have the `admin` role.
+Every route starts with `/api`.
 
-| Method | Route                  | Description                                               |
-|--------|-------------------------|-------------------------------------------------------------|
-| GET    | `/health`               | Liveness check                                              |
-| POST   | `/auth/signup`          | Create an account (first account ever = admin)                |
-| POST   | `/auth/login`           | Sign in, returns a JWT                                        |
-| GET    | `/auth/me`              | 🔒 Current user                                                |
-| GET    | `/expenses`             | 🔒 List your expenses — supports `search`, `category`, `paymentMethod`, `dateFrom`, `dateTo`, `amountMin`, `amountMax`, `sortBy` (`date`\|`amount`), `sortDir` (`asc`\|`desc`), `page`, `limit` |
-| POST   | `/expenses`             | 🔒 Create an expense                                           |
-| GET    | `/expenses/:id`         | 🔒 Get one of your expenses                                    |
-| PUT    | `/expenses/:id`         | 🔒 Update one of your expenses                                 |
-| DELETE | `/expenses/:id`         | 🔒 Delete one of your expenses                                 |
-| GET    | `/budgets/:month`       | 🔒 Get your budget for a `YYYY-MM` month                        |
-| PUT    | `/budgets/:month`       | 🔒 Set/update your budget for a `YYYY-MM` month                 |
-| GET    | `/dashboard/summary`    | 🔒 Dashboard summary for `?month=YYYY-MM` (defaults to current) |
-| GET    | `/categories`           | 🔒 List all categories                                          |
-| POST   | `/categories`           | 🔒👑 Create a category                                          |
-| PUT    | `/categories/:id`       | 🔒👑 Rename/recolour a category                                 |
-| DELETE | `/categories/:id`       | 🔒👑 Delete a category (reassigns its expenses to Uncategorized) |
-| GET    | `/admin/insights`       | 🔒👑 Platform-wide stats                                        |
+- **Auth** means you need an `Authorization: Bearer <token>` header.
+- **Admin** means you also need to be logged in as an admin.
 
-## Design notes
+| Method | Route                | Access | Description |
+|--------|----------------------|--------|-------------|
+| GET    | `/health`            | Public | Check that the API is up |
+| POST   | `/auth/signup`       | Public | Create an account (the first account becomes admin) |
+| POST   | `/auth/login`        | Public | Log in and get a JWT back |
+| GET    | `/auth/me`           | Auth   | Get the current user |
+| GET    | `/expenses`          | Auth   | List your expenses. Query params: `search`, `category`, `paymentMethod`, `dateFrom`, `dateTo`, `amountMin`, `amountMax`, `sortBy` (`date` or `amount`), `sortDir` (`asc` or `desc`), `page`, `limit` |
+| POST   | `/expenses`          | Auth   | Create an expense |
+| GET    | `/expenses/:id`      | Auth   | Get one of your expenses |
+| PUT    | `/expenses/:id`      | Auth   | Update one of your expenses |
+| DELETE | `/expenses/:id`      | Auth   | Delete one of your expenses |
+| GET    | `/budgets/:month`    | Auth   | Get your budget for a month (`YYYY-MM`) |
+| PUT    | `/budgets/:month`    | Auth   | Set or update your budget for a month |
+| GET    | `/dashboard/summary` | Auth   | Dashboard data for `?month=YYYY-MM` (defaults to this month) |
+| GET    | `/categories`        | Auth   | List all categories |
+| POST   | `/categories`        | Admin  | Create a category |
+| PUT    | `/categories/:id`    | Admin  | Rename or recolour a category |
+| DELETE | `/categories/:id`    | Admin  | Delete a category (its expenses move to Uncategorized) |
+| GET    | `/admin/insights`    | Admin  | Platform-wide stats |
 
-A few deliberate choices worth calling out:
+## Design decisions
 
-- **Context vs. Redux is a hard boundary.** Authentication (user,
-  token, login/signup/logout, protected/admin routes) lives entirely in
-  `AuthContext`. Expense search/filter/sort/pagination lives entirely in
-  a Redux Toolkit slice. Neither touches the other's job, and the
-  expense *data* itself is never duplicated into Redux — only the
-  filter state is, with the actual list fetched fresh on every change.
-- **Deleting a category never orphans data.** A seeded "Uncategorized"
-  category is protected from deletion; deleting any other category
-  reassigns its expenses to it first.
-- **Ownership is enforced server-side**, not just hidden in the UI —
-  every expense/budget route filters by `req.user._id` from the
-  verified JWT, so there's no way to read or modify another user's data
-  by guessing an id.
+**Context and Redux each do one job.** Everything to do with auth lives in `AuthContext`: the user, the token, login, signup, logout, and the protected and admin-only routes. The expense search, filters, sorting and pagination live in a Redux Toolkit slice. The expenses themselves never go into Redux, only the filter settings do. The list gets fetched again from the API whenever a filter changes, so there's no second copy of the data to keep in sync.
+
+**Deleting a category doesn't break expenses.** The "Uncategorized" category is protected and can't be deleted. When any other category is deleted, its expenses are moved to Uncategorized first.
+
+**Users can only touch their own data, and the server checks it.** Hiding other people's data in the UI isn't enough on its own. Every expense and budget query on the backend filters by the user ID from the verified JWT, so guessing someone else's expense ID gets you nothing.
 
 ## Deployment
 
-Planned setup: MongoDB Atlas (database) → Render (backend API) →
-Vercel (frontend), with the frontend's `VITE_API_URL` pointed at the
-Render service and the backend's `CLIENT_URL` pointed at the Vercel
-domain for CORS. This section gets filled in with the live URLs once
-deployed.
+- **Database:** MongoDB Atlas
+- **Backend:** Render, set up from `render.yaml`. `MONGO_URI`, `JWT_SECRET` and `CLIENT_URL` are entered in the Render dashboard so they're never committed. `CLIENT_URL` is set to the Vercel URL so CORS lets the frontend through.
+- **Frontend:** Vercel, with `VITE_API_URL` set to `https://retain-backend-rewp.onrender.com/api`. `frontend/vercel.json` sends every route to `index.html` so refreshing a page like `/expenses` doesn't return a 404.
+
+**Note:** the demo admin password is in the seed script, which is public in this repo. It's fine for a demo, but change it before using this for anything real.
