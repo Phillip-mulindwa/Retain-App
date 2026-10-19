@@ -127,7 +127,12 @@ export default function Layout() {
               <MenuIcon />
             </IconButton>
           )}
-          <Typography variant="subtitle1" color="text.primary" sx={{ fontWeight: 600 }}>
+          <Typography
+            variant="subtitle1"
+            color="text.primary"
+            noWrap
+            sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: { xs: 160, sm: 'none' } }}
+          >
             Hi, {user?.name?.split(' ')[0]} 👋
           </Typography>
           <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>
@@ -174,6 +179,7 @@ export default function Layout() {
         sx={{
           flexGrow: 1,
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          ml: { md: `${DRAWER_WIDTH}px` },
           mt: 8,
           p: { xs: 2, sm: 3, md: 4 },
           bgcolor: 'background.default',
