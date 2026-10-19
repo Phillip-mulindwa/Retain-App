@@ -153,6 +153,12 @@ Every route starts with `/api`.
 
 **Users can only touch their own data, and the server checks it.** Hiding other people's data in the UI isn't enough on its own. Every expense and budget query on the backend filters by the user ID from the verified JWT, so guessing someone else's expense ID gets you nothing.
 
+**Shared TypeScript types.** The types for users, expenses, budgets, categories, dashboard data and admin insights are all in `frontend/src/types/index.ts`. The API functions, Redux slice, Context and components all use them, and there's no `any` anywhere in the frontend.
+
+**It works on phones too.** On desktop the sidebar stays open. On smaller screens it turns into a slide-out menu, and the pages, forms and filters stack into a single column.
+
+**Errors get shown, not swallowed.** On the backend, every route passes errors to one error handler in `backend/src/middleware/errorHandler.js`. It turns validation errors, duplicate emails and bad IDs into clear 4xx messages. On the frontend, those messages show up as alerts in the forms and pages. An Axios interceptor logs you out and sends you to the login page if your token expires.
+
 ## Deployment
 
 - **Database:** MongoDB Atlas
